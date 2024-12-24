@@ -17,6 +17,8 @@ from pytz import timezone
 from telethon.tl.functions.account import UpdateProfileRequest
 from telethon.tl.functions.users import GetFullUserRequest
 import sys
+import subprocess
+import shutil
 
 api_id = 23651425
 api_hash = '6fa5fe38ef04b3677707d7e2551ac528'
@@ -312,6 +314,36 @@ async def main():
             "- { `.ايقاف اسم وقتي` }\nلتعطيل الوقت وازالته \n\n"
             "- سورس العقرب ✏️**"
         )
+        
+
+# تعريف الأمر لتحديث المشروع
+    @client.on(events.NewMessage(pattern=r"^.تحديث(?:\s|$)"))
+    async def update_project(event):
+        # إرسال رسالة "انتظر يتم التحديث"
+        reply_message = await event.reply("⏳ انتظر يتم التحديث...")
+    
+        try:
+            # حذف مجلد hyon إذا كان موجودًا
+            hyon_folder_path = "hyon"  # تأكد من المسار الصحيح للمجلد
+            if os.path.exists(hyon_folder_path):
+                shutil.rmtree(hyon_folder_path)  # حذف المجلد ومحتوياته
+    
+            # استنساخ المشروع الجديد من GitHub
+            github_url = "https://github.com/Mhmd26/hyon.git"  # استبدل بالرابط الخاص بك
+            subprocess.run(["git", "clone", github_url, "hyon"], check=True)  # استنساخ المشروع إلى مجلد hyon
+            
+            # الانتقال إلى مجلد hyon
+            os.chdir("hyon")
+            
+            # تشغيل المشروع
+            subprocess.run(["python", "main.py"], check=True)
+    
+            # تحديث الرسالة إلى "تم التحديث"
+            await reply_message.edit("✅ تم التحديث بنجاح!")
+        except Exception as e:
+            # إذا حدث خطأ، قم بتحديث الرسالة مع عرض الخطأ
+            await reply_message.edit(f"❌ حدث خطأ أثناء التحديث: {e}")
+        
     print("The source was successfully run ✓")
     await client.run_until_disconnected()
     
