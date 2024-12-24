@@ -12,7 +12,6 @@ from telethon.errors.rpcerrorlist import (
     WebpageMediaEmptyError,
 )
 from telethon.tl.functions.messages import ImportChatInviteRequest as Get
-from telethon.tl.types import MessageMediaPhoto, MessageMediaVideo
 from pytz import timezone  
 from telethon.tl.functions.account import UpdateProfileRequest
 from telethon.tl.functions.users import GetFullUserRequest
@@ -128,7 +127,7 @@ async def main():
         ALIVE_TEXT = "**╔========================╗ **"
         mention = f"[{me.first_name}](tg://user?id={me.id})"
         temp = f"""{ALIVE_TEXT}
-**   [𝗦𝗰𝗼𝗿 𝘄𝗼𝗿𝗸𝘀 𝘀𝘂𝗰𝗰𝗲𝘀𝗳𝘂𝗹𝗹𝘆](t.me/Scorpion_scorp) ✅
+**   [𝗦𝗰𝗼𝗿 𝘄𝗼𝗿𝗸𝘀 𝘀𝘂𝗰𝗰𝗲𝘀𝗳𝘂𝗹𝗹𝘆](t.me/Scorpion_scorp) 
 
    {EMOJI}‌‎𝐍𝐢𝐦𝐞 | {mention} ٫
    {EMOJI}‌‎𝐏𝐲𝐭𝐡𝐨𝐧 | {sys.version.split()[0]} ٫
