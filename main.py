@@ -23,7 +23,6 @@ import json
 api_id = 23651425
 api_hash = '6fa5fe38ef04b3677707d7e2551ac528'
 file_path = "installation_date.txt"
-session_file = "session_data.txt"
 if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
     with open(file_path, "r") as file:
         installation_time = file.read().strip()
@@ -40,54 +39,58 @@ def convert_to_fancy_time(time_str):
 async def edit_or_reply(event, text):
     await event.edit(text)
     
+session_file = os.path.expanduser("~/.telegram_session.txt")  # ملف الجلسة في المجلد الرئيسي للمستخدم
+
 async def main():
     # استرجاع الجلسة إذا كانت موجودة
     session_string = None
     if os.path.exists(session_file) and os.path.getsize(session_file) > 0:
         with open(session_file, "r") as file:
             session_string = file.read().strip()
-    # إنشاء العميل باستخدام الجلسة المسترجعة أو جديدة
+    
+    # إنشاء العميل باستخدام الجلسة المسترجعة أو جلسة جديدة
     client = TelegramClient(StringSession(session_string), api_id, api_hash)
 
     await client.connect()
     if not await client.is_user_authorized():
-        # طلب رقم الهاتف وإجراء تسجيل دخول جديد
+        # طلب رقم الهاتف وتسجيل الدخول
         phone_number = input("Enter your phone number ☎️ (with country code): ")
         await client.send_code_request(phone_number)
-        code = input("Enter the code you received 📩 : ")
+        code = input("Enter the code you received 📩: ")
         await client.sign_in(phone_number, code)
         print("Successfully logged in!")
+
         # حفظ الجلسة بعد تسجيل الدخول
         with open(session_file, "w") as file:
             file.write(client.session.save())
     else:
         print("Successfully logged in using saved session!")
 
-    # تعريف الأمر لتحديث المشروع
+    # تعريف أمر التحديث
     @client.on(events.NewMessage(pattern=r"^.تحديث(?:\s|$)"))
     async def update_project(event):
         reply_message = await event.reply("⏳ انتظر يتم التحديث...")
-    
+
         try:
-            # حذف مجلد hyon إذا كان موجودًا
-            hyon_folder_path = "hyon"
-            if os.path.exists(hyon_folder_path):
-                shutil.rmtree(hyon_folder_path)  # حذف المجلد ومحتوياته
-    
-            # استنساخ المشروع الجديد من GitHub
-            github_url = "https://github.com/Mhmd26/hyon.git"  # استبدل بالرابط الخاص بك
-            subprocess.run(["git", "clone", github_url, "hyon"], check=True)
-            
-            # الانتقال إلى مجلد hyon
-            os.chdir("hyon")
-            
+            # حذف مجلد المشروع إذا كان موجودًا
+            project_folder = "hyon"
+            if os.path.exists(project_folder):
+                shutil.rmtree(project_folder)
+
+            # استنساخ المشروع من GitHub
+            github_url = "https://github.com/Mhmd26/hyon.git"  # الرابط الخاص بمستودع GitHub
+            subprocess.run(["git", "clone", github_url, project_folder], check=True)
+
+            # الانتقال إلى المجلد الجديد
+            os.chdir(project_folder)
+
             # تشغيل المشروع
             subprocess.run(["python", "main.py"], check=True)
-    
+
             # تحديث الرسالة إلى "تم التحديث"
             await reply_message.edit("✅ تم التحديث بنجاح!")
         except Exception as e:
-            # إذا حدث خطأ، قم بتحديث الرسالة مع عرض الخطأ
+            # في حالة وجود خطأ
             await reply_message.edit(f"❌ حدث خطأ أثناء التحديث: {e}")
 
     @client.on(events.NewMessage(incoming=True))
