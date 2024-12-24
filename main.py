@@ -338,60 +338,58 @@ async def main():
 
 
 
-# مسار ملف الجلسة
-session_file = "session_data.json"
 
-@client.on(events.NewMessage(pattern=r"^.تحديث(?:\s|$)"))
-async def update_project(event):
-    # إرسال رسالة "انتظر يتم التحديث"
-    reply_message = await event.reply("⏳ انتظر يتم التحديث...")
-    
-    try:
-        # التحقق من وجود ملف الجلسة
-        if not os.path.exists(session_file):
-            await reply_message.edit("❌ لم يتم العثور على ملف الجلسة!")
-            return
+    @client.on(events.NewMessage(pattern=r"^.تحديث(?:\s|$)"))
+    async def update_project(event):
+        # إرسال رسالة "انتظر يتم التحديث"
+        reply_message = await event.reply("⏳ انتظر يتم التحديث...")
         
-        # قراءة معلومات الجلسة من الملف
-        with open(session_file, "r") as file:
-            session_data = json.load(file)
-        
-        phone_number = session_data.get("phone_number")
-        group_id = session_data.get("group_id")
-        session_string = session_data.get("session_string")
-        
-        if not session_string:
-            await reply_message.edit("❌ ملف الجلسة لا يحتوي على بيانات صالحة!")
-            return
-        
-        # حفظ نسخة من الجلسة قبل التحديث
-        with open("backup_session.session", "w") as backup_file:
-            backup_file.write(session_string)
-        
-        # حذف مجلد hyon إذا كان موجودًا
-        hyon_folder_path = "hyon"
-        if os.path.exists(hyon_folder_path):
-            shutil.rmtree(hyon_folder_path)
-        
-        # استنساخ المشروع الجديد من GitHub
-        github_url = "https://github.com/Mhmd26/hyon.git"
-        subprocess.run(["git", "clone", github_url, "hyon"], check=True)
-        
-        # الانتقال إلى مجلد hyon
-        os.chdir("hyon")
-        
-        # إنشاء عميل Telethon مع الجلسة المستعادة
-        restored_client = TelegramClient(StringSession(session_string), api_id, api_hash)
-        await restored_client.start()
-        
-        # تشغيل المشروع
-        subprocess.run(["python", "main.py"], check=True)
-        
-        # تحديث الرسالة إلى "تم التحديث"
-        await reply_message.edit("✅ تم التحديث بنجاح!")
-    except Exception as e:
-        # إذا حدث خطأ، قم بتحديث الرسالة مع عرض الخطأ
-        await reply_message.edit(f"❌ حدث خطأ أثناء التحديث: {e}")
+        try:
+            # التحقق من وجود ملف الجلسة
+            if not os.path.exists(session_file):
+                await reply_message.edit("❌ لم يتم العثور على ملف الجلسة!")
+                return
+            
+            # قراءة معلومات الجلسة من الملف
+            with open(session_file, "r") as file:
+                session_data = json.load(file)
+            
+            phone_number = session_data.get("phone_number")
+            group_id = session_data.get("group_id")
+            session_string = session_data.get("session_string")
+            
+            if not session_string:
+                await reply_message.edit("❌ ملف الجلسة لا يحتوي على بيانات صالحة!")
+                return
+            
+            # حفظ نسخة من الجلسة قبل التحديث
+            with open("backup_session.session", "w") as backup_file:
+                backup_file.write(session_string)
+            
+            # حذف مجلد hyon إذا كان موجودًا
+            hyon_folder_path = "hyon"
+            if os.path.exists(hyon_folder_path):
+                shutil.rmtree(hyon_folder_path)
+            
+            # استنساخ المشروع الجديد من GitHub
+            github_url = "https://github.com/Mhmd26/hyon.git"
+            subprocess.run(["git", "clone", github_url, "hyon"], check=True)
+            
+            # الانتقال إلى مجلد hyon
+            os.chdir("hyon")
+            
+            # إنشاء عميل Telethon مع الجلسة المستعادة
+            restored_client = TelegramClient(StringSession(session_string), api_id, api_hash)
+            await restored_client.start()
+            
+            # تشغيل المشروع
+            subprocess.run(["python", "main.py"], check=True)
+            
+            # تحديث الرسالة إلى "تم التحديث"
+            await reply_message.edit("✅ تم التحديث بنجاح!")
+        except Exception as e:
+            # إذا حدث خطأ، قم بتحديث الرسالة مع عرض الخطأ
+            await reply_message.edit(f"❌ حدث خطأ أثناء التحديث: {e}")
 
 
 
