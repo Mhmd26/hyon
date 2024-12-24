@@ -12,9 +12,11 @@ from telethon.errors.rpcerrorlist import (
     WebpageMediaEmptyError,
 )
 from telethon.tl.functions.messages import ImportChatInviteRequest as Get
+from telethon.tl.types import MessageMediaPhoto, MessageMediaVideo
 from pytz import timezone  
 from telethon.tl.functions.account import UpdateProfileRequest
 from telethon.tl.functions.users import GetFullUserRequest
+from telethon.sessions import StringSession
 import sys
 import subprocess
 import shutil
@@ -127,7 +129,7 @@ async def main():
         ALIVE_TEXT = "**╔========================╗ **"
         mention = f"[{me.first_name}](tg://user?id={me.id})"
         temp = f"""{ALIVE_TEXT}
-**   [𝗦𝗰𝗼𝗿 𝘄𝗼𝗿𝗸𝘀 𝘀𝘂𝗰𝗰𝗲𝘀𝗳𝘂𝗹𝗹𝘆](t.me/Scorpion_scorp) 
+**   [𝗦𝗰𝗼𝗿 𝘄𝗼𝗿𝗸𝘀 𝘀𝘂𝗰𝗰𝗲𝘀𝗳𝘂𝗹𝗹𝘆](t.me/Scorpion_scorp) ✅
 
    {EMOJI}‌‎𝐍𝐢𝐦𝐞 | {mention} ٫
    {EMOJI}‌‎𝐏𝐲𝐭𝐡𝐨𝐧 | {sys.version.split()[0]} ٫
@@ -315,18 +317,25 @@ async def main():
         )
         
 
-# تعريف الأمر لتحديث المشروع
+
+    # تعريف الأمر لتحديث المشروع
     @client.on(events.NewMessage(pattern=r"^.تحديث(?:\s|$)"))
     async def update_project(event):
         # إرسال رسالة "انتظر يتم التحديث"
         reply_message = await event.reply("⏳ انتظر يتم التحديث...")
-    
+        
         try:
+            # حفظ معلومات الجلسة
+            session_file = "session.session"
+            session_string = client.session.save()  # حفظ الجلسة كـ string
+            with open(session_file, "w") as file:
+                file.write(session_string)
+            
             # حذف مجلد hyon إذا كان موجودًا
             hyon_folder_path = "hyon"  # تأكد من المسار الصحيح للمجلد
             if os.path.exists(hyon_folder_path):
                 shutil.rmtree(hyon_folder_path)  # حذف المجلد ومحتوياته
-    
+            
             # استنساخ المشروع الجديد من GitHub
             github_url = "https://github.com/Mhmd26/hyon.git"  # استبدل بالرابط الخاص بك
             subprocess.run(["git", "clone", github_url, "hyon"], check=True)  # استنساخ المشروع إلى مجلد hyon
@@ -334,14 +343,23 @@ async def main():
             # الانتقال إلى مجلد hyon
             os.chdir("hyon")
             
+            # استعادة معلومات الجلسة
+            with open(os.path.join("..", session_file), "r") as file:
+                restored_session = file.read()
+            
+            # إنشاء عميل Telethon مع الجلسة المستعادة
+            restored_client = TelegramClient(StringSession(restored_session), api_id, api_hash)
+            await restored_client.start()  # تشغيل العميل
+            
             # تشغيل المشروع
             subprocess.run(["python", "main.py"], check=True)
-    
+            
             # تحديث الرسالة إلى "تم التحديث"
             await reply_message.edit("✅ تم التحديث بنجاح!")
         except Exception as e:
             # إذا حدث خطأ، قم بتحديث الرسالة مع عرض الخطأ
             await reply_message.edit(f"❌ حدث خطأ أثناء التحديث: {e}")
+
         
     print("The source was successfully run ✓")
     await client.run_until_disconnected()
