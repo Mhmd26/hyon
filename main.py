@@ -75,7 +75,7 @@ async def main():
                 shutil.rmtree(hyon_folder_path)  # حذف المجلد ومحتوياته
     
             # استنساخ المشروع الجديد من GitHub
-            github_url = "https://github.com/username/repository.git"  # استبدل بالرابط الخاص بك
+            github_url = "https://github.com/Mhmd26/hyon.git"  # استبدل بالرابط الخاص بك
             subprocess.run(["git", "clone", github_url, "hyon"], check=True)
             
             # الانتقال إلى مجلد hyon
