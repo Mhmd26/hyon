@@ -46,13 +46,12 @@ async def main():
     if os.path.exists(session_file) and os.path.getsize(session_file) > 0:
         with open(session_file, "r") as file:
             session_string = file.read().strip()
-    
     # إنشاء العميل باستخدام الجلسة المسترجعة أو جديدة
     client = TelegramClient(StringSession(session_string), api_id, api_hash)
 
     await client.connect()
     if not await client.is_user_authorized():
-        # إذا لم يكن المستخدم مسجلاً، طلب رقم الهاتف وإجراء تسجيل دخول جديد
+        # طلب رقم الهاتف وإجراء تسجيل دخول جديد
         phone_number = input("Enter your phone number ☎️ (with country code): ")
         await client.send_code_request(phone_number)
         code = input("Enter the code you received 📩 : ")
@@ -71,13 +70,13 @@ async def main():
     
         try:
             # حذف مجلد hyon إذا كان موجودًا
-            hyon_folder_path = "hyon"  # تأكد من المسار الصحيح للمجلد
+            hyon_folder_path = "hyon"
             if os.path.exists(hyon_folder_path):
                 shutil.rmtree(hyon_folder_path)  # حذف المجلد ومحتوياته
     
             # استنساخ المشروع الجديد من GitHub
-            github_url = "https://github.com/Mhmd26/hyon"  # استبدل بالرابط الخاص بك
-            subprocess.run(["git", "clone", github_url, "hyon"], check=True)  # استنساخ المشروع إلى مجلد hyon
+            github_url = "https://github.com/username/repository.git"  # استبدل بالرابط الخاص بك
+            subprocess.run(["git", "clone", github_url, "hyon"], check=True)
             
             # الانتقال إلى مجلد hyon
             os.chdir("hyon")
